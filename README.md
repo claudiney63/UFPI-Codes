@@ -1,2 +1,3 @@
 # Codes-in-C
-Alguns códigos de teste, usando a linguagem C
+Programas elaborados em atividades da disciplina de Proframação Estruturada (PE), usando
+a linguagem C.
