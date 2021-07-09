@@ -577,7 +577,7 @@ int cancelarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 		
 		int escolha_cancelamento;
 		
-		if(escolha == 1) {
+		if(escolha == 1) { //caso escolha a ultima compra
 			if(clientes[i].ultima_compra.compra_cancelada == 1) {
 				printf("\nERRO: Ultima compra ja cancelada!\n");
 				system("pause");
@@ -607,7 +607,7 @@ int cancelarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 					return 0;
 				}
 			}
-		} else if(escolha == 2) {
+		} else if(escolha == 2) { //caso escolha uma outra compra
 			float valor_compra_cancelar;
 			printf("\nQual o valor da compra a ser cancelada?\n");
 			printf("Informe: R$ ");
