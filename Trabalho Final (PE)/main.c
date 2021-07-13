@@ -5,27 +5,28 @@
 
 typedef struct //struct tBonus
 {
-  int teto;
-  float valor;
-  float valor_bonificar;
+	int teto;
+	float valor;
+	float valor_bonificar;
 } tBonus;
 
 typedef struct //struct tCompra
 {
-  float valor_total_compra;
-  int compra_cancelada;
-  tBonus bonus;
+	float valor_compra_sem_bonus;
+	float valor_total_compra;
+	int compra_cancelada;
+	tBonus bonus;
 } tCompra;
 
 typedef struct //struct tCliente
 {
-  char nome[50];
-  char cpf[12];
-  char telefone [15];
-  char email[30];
-  int bonus;
-  float total_compras;
-  tCompra ultima_compra;
+	char nome[50];
+	char cpf[12];
+	char telefone [15];
+	char email[30];
+	int bonus;
+	float total_compras;
+	tCompra ultima_compra;
 } tCliente;
 
 /*
@@ -46,13 +47,20 @@ int verificarCPF(tCliente clientes[MAX], char cpf_informado[12], int *posicao_at
 	return -1; //retorna -1 caso não exista clientes com cpf igual
 }
 
+//funçao para recebr um nome composto
+void receber_nome_composto(char *nome) {
+	scanf("%*c");
+	fgets(nome, 50, stdin);
+	nome[strlen(nome) - 1] = '\0';
+}
+
 /*
 Função cadastrar cliente, que recebe 3 paramentros, o vetor do struct clientes,
 recebe opcao do menu clientes, para ter um controle para retornar para o menu principal,
 apos a finalização dessa função, alem da posicao final do vetor, para manter um controle
 sobre o preenchimento do vetor.
 */
-int cadastrarCliente(tCliente clientes[MAX], int *opcao, int *posicao_atual) 
+int cadastrarCliente(tCliente clientes[MAX], int *posicao_atual) 
 {
 	system("cls");
 	char cpf_informado[12], nome_informado[50];
@@ -69,13 +77,14 @@ int cadastrarCliente(tCliente clientes[MAX], int *opcao, int *posicao_atual)
 		printf("\nErro: CPF ja cadastrado.\n\n");
 		printf("------------------------\n");
 		system("pause");
-		return *opcao = 0; //retorna opcao do menu clientes como 0, mandando para o menu principal.
+		system("cls");
+		return 0; //retorna opcao para o menu clientes.
 	}
 	//o vetor só é incrementdo caso não exista cpf ja existente ou seja o primeiro.
 	pos = *posicao_atual+1;
 	strcpy(clientes[pos].cpf, cpf_informado); //atribuindo no vetor clientes o cpf informado.
 	printf("Qual o nome? Informe: ");
-	scanf("%s", nome_informado);
+	receber_nome_composto(nome_informado);
 	strcpy(clientes[pos].nome, nome_informado); //atribuindo no vetor clientes o nome informado.
 	printf("Qual o telefone? Informe: ");
 	scanf("%s", telefone_informado);
@@ -85,8 +94,10 @@ int cadastrarCliente(tCliente clientes[MAX], int *opcao, int *posicao_atual)
 	strcpy(clientes[pos].email, email_informado); //atribuindo no vetor clientes o email informado.
 	clientes[pos].bonus = 0; //atribuindo bonus zero para o cliente novato.
 	clientes[pos].total_compras = 0.0; //novo cliente não possui um total de compras.
+	clientes[pos].ultima_compra.compra_cancelada = -1; //inicializo com um valor invalido para não
+	//ser possivel a tetativa de cancekar uma ultima compra, não feita ainda, ou resgistrada
 	printf("----------------------------------\n");
-	printf("\nCLIENTE CADASTRADO COM SUCESSO!\n");
+	printf("\n>> CLIENTE CADASTRADO COM SUCESSO! <<\n");
 	printf("\n----------------------------------\n");
 	system("pause");
 	system("cls");
@@ -195,7 +206,7 @@ vetor de um struct clientes, recebe opcao do menu clientes, para ter um controle
 para retornar para o menu principal, alem da posicao final do vetor, para manter um controle
 sobre o preenchimento do vetor, a posicao no vetor do cliente que tera seus dados modificados.
 */
-int menuAlterarCadastro(tCliente clientes[MAX], int *opcao, int *posicao_atual, int *posicao_cliente_existente) 
+int menuAlterarCadastro(tCliente clientes[MAX], int *posicao_atual, int *posicao_cliente_existente) 
 { 
 	system("cls");
 	int escolha;
@@ -218,7 +229,7 @@ int menuAlterarCadastro(tCliente clientes[MAX], int *opcao, int *posicao_atual, 
 			case 4: alterarEmail(clientes, &(*posicao_cliente_existente));
 				break;
 			case 0://printf("\nMenu Alterar Cadastro Finalizado!\n\n----------------------------\n"); 
-				return *opcao = 0; //retorno de opcao como zero, onde volta para o menu principal.
+				return 0; //retorno de opcao como zero, onde volta para o menu cliente.
 				//passando pelo menu clientes e saindo ja dele diretamente.
 				break;
 			default: printf("\nEscolha uma opcao valida!\n\n----------------------------\n");
@@ -248,12 +259,12 @@ int alterarCliente(tCliente clientes[MAX], int *opcao, int *posicao_atual)
 		printf("------------------------\n");
 		system("pause");
 		system("cls");
-		return *opcao = 0; //opcao zerada para passar direto pelo menu clientes e ir ao menu principal.
+		return 0; //opcao zerada para passar direto pelo menu clientes e ir ao menu principal.
 	}
 	//caso exista, pegamos a posicao do cliente no vetor que iremos alterar e guardamos.
 	int posicao_cliente_existente = verificarCPF(clientes, cpf_informado, &(*posicao_atual));
 	//chamamos o menu alterar cadastro, parar alterar as informações.
-	menuAlterarCadastro(clientes, &(*opcao), &(*posicao_atual), &posicao_cliente_existente);
+	menuAlterarCadastro(clientes, &(*posicao_atual), &posicao_cliente_existente);
 	system("cls");
 	return 0;
 }
@@ -282,7 +293,10 @@ int consultarCliente(tCliente clientes[MAX], int *opcao, int *posicao_atual)
 			printf("EMAIL: %s\n", clientes[i].email);
 			printf("BONUS: %d\n", clientes[i].bonus);
 			printf("TOTAL EM COMPRAS: R$ %.2f\n", clientes[i].total_compras);
-			printf("ULTIMA COMPRA: R$ %.2f\n\n", clientes[i].ultima_compra.valor_total_compra);
+			printf("\n---------ULTIMA COMPRA: --------- \n");
+			printf("Valor da compra sem bonus: R$ %.2f\n", clientes[i].ultima_compra.valor_compra_sem_bonus);
+			printf("Valor total da compra: R$ %.2f\n", clientes[i].ultima_compra.valor_total_compra);
+			printf("Compra cancelada SIM[1] / NAO[0]: %d\n\n", clientes[i].ultima_compra.compra_cancelada == -1 || clientes[i].ultima_compra.compra_cancelada == 0 ? 0 : 1);
 			encontrou_cpf = 1;
 			break;
 		}
@@ -393,7 +407,7 @@ void menuClientes(tCliente clientes[MAX], int *posicao_atual)
 		printf("------------------------\n");
 		
 		switch(opcao) {
-			case 1: cadastrarCliente(clientes, &opcao, &(*posicao_atual));
+			case 1: cadastrarCliente(clientes, &(*posicao_atual));
 				break;
 			case 2: alterarCliente(clientes, &opcao, &(*posicao_atual));
 				break;
@@ -411,7 +425,7 @@ void menuClientes(tCliente clientes[MAX], int *posicao_atual)
 }
 
 
-int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int *posicao_atual)
+int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual, int *bonus_gasto_ultima_compra, int *bonus_ganho_ultima_compra)
 {
 	system("cls");
 	char cpf_informado[12];
@@ -427,7 +441,7 @@ int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 		printf("------------------------\n");
 		system("pause");
 		system("cls");
-		return *opcao = 0; //opcao zerada para passar direto pelo menu compra e ir ao menu principal.
+		return 0; //opcao zerada para passar direto pelo menu compra e ir ao menu principal.
 	} 
 	
 	//pegando o indice do cliente com o cpf em especifico.
@@ -450,6 +464,8 @@ int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 	
 	float aux_ultima_compra = valor_compra; //serve para auxiliar caso a compra não seja feita.
 	int aux_valor_bonus = clientes[i].bonus; //serve para auxiliar caso o bonus seja gasto, porem a compra não feita.
+	int aux_bonus_gasto = *bonus_gasto_ultima_compra;
+	int aux_bonus_ganho = *bonus_ganho_ultima_compra;
 	
 	if(clientes[i].bonus != 0) { //faz a pergunta de uso do bonus apenas se ele for diferente de zero.
 		printf("\nDeseja utilizar seu bonus? \n[1 - SIM / 0 - NAO]\n");
@@ -460,15 +476,24 @@ int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 			float valor_bonus = clientes[i].bonus * bonificacao->valor; 
 			valor_compra = valor_compra - valor_bonus;
 			int valor_bonus_atualizado = 0; //atribuo o bonus como zero se for totalmente gasto
+			*bonus_gasto_ultima_compra = clientes[i].bonus;
 			if(valor_compra < 0.0) { //aqui vejo se o bonus foi totalmente gasto, caso contrario
 			//o cliente recebe o restante não gasto.
 				valor_bonus = valor_compra * -1;
 				valor_compra = 0.0; //zera caso o bonus seja maior que o valor da compra
 				valor_bonus_atualizado = (int)(valor_bonus/bonificacao->valor); //como o bonus não zerou ele recebe o restante
+				*bonus_gasto_ultima_compra = clientes[i].bonus - valor_bonus_atualizado;
+				if(*bonus_gasto_ultima_compra < 0) {
+					*bonus_gasto_ultima_compra *= -1;
+				}
 			}
 			clientes[i].bonus = valor_bonus_atualizado; //atualizando bonus apos utilizar o mesmo.
 			printf("\n---------------------------------\n");
-			printf("BONUS ATUAL = %d", valor_bonus_atualizado);
+			*bonus_ganho_ultima_compra = (int)(valor_compra/bonificacao->valor_bonificar);
+			if(*bonus_ganho_ultima_compra > bonificacao->teto) { //modifica o bonus ganho caso passe do teto
+				*bonus_ganho_ultima_compra -= (*bonus_ganho_ultima_compra-bonificacao->teto);
+			}
+			printf("BONUS ATUAL = %d", *bonus_ganho_ultima_compra);
 			printf("\nVALOR DA COMPRA ATUALIZADO = R$ %.2f\n", valor_compra);
 			printf("---------------------------------\n");
 		}
@@ -498,6 +523,8 @@ int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 				pagamento_cliente += valor_adicional;
 			} else { //se o dinheiro não for fornecido e continuar inferior, o bonus gasto é devolvido
 				clientes[i].bonus = aux_valor_bonus;
+				*bonus_gasto_ultima_compra = aux_bonus_gasto;
+				*bonus_ganho_ultima_compra = aux_bonus_ganho;
 				system("cls");
 				printf("\n---------------------------------\n");
 				printf("COMPRA NAO EFETIVADA\nValor devolvido ao cliente: R$ %.2f\n", pagamento_cliente);
@@ -511,20 +538,27 @@ int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 	
 	//apos o dinheiro ser fornecido corretamente, a ultima compra é atualizada
 	clientes[i].ultima_compra.valor_total_compra = aux_ultima_compra; //atualizando o valor da ultima compra.
-	clientes[i].total_compras += (float)aux_ultima_compra; //atualizando o total de compras.
+	clientes[i].total_compras += valor_compra; //atualizando o total de compras.
+	clientes[i].ultima_compra.valor_compra_sem_bonus = valor_compra; //atualiza o valor da compra sem o bonus.
 	
 	//o cliente so recebe o bonus, caso não tenha chegado no teto e tenha pago um valor minimo para ser bonificado
 	if(pagamento_cliente >= bonificacao->valor_bonificar && clientes[i].bonus < bonificacao->teto+1) {
-		if(pagamento_cliente-valor_compra == 0.0) {
+		if(pagamento_cliente-valor_compra == 0.0) { //ve se o pagamento nao tera troco e calcula o bonus direto
 			clientes[i].bonus += (int)(pagamento_cliente/bonificacao->valor_bonificar);
-		} else { //tira a diferença do preco caso seja maior que o valor da compra
+			*bonus_ganho_ultima_compra = (int)(pagamento_cliente/bonificacao->valor_bonificar);
+		} else { //tira a diferença do pagamento caso seja maior que o valor da compra, havendo troco, e so calcula o bonus com o valor pago
 			float diferenca_preco = pagamento_cliente-valor_compra;
 			clientes[i].bonus += (int)((pagamento_cliente-diferenca_preco)/bonificacao->valor_bonificar);
+			*bonus_ganho_ultima_compra = (int)((pagamento_cliente-diferenca_preco)/bonificacao->valor_bonificar);
 		}		
 	}
 	//o bonus é diminuido caso tenha passado do teto, voltando para o teto
 	if(clientes[i].bonus > bonificacao->teto) {
 		clientes[i].bonus -= (clientes[i].bonus-bonificacao->teto);
+	}
+	
+	if(*bonus_ganho_ultima_compra > bonificacao->teto) {
+		*bonus_ganho_ultima_compra -= (*bonus_ganho_ultima_compra-bonificacao->teto);
 	}
 	
 	if(pagamento_cliente > valor_compra) {
@@ -547,7 +581,7 @@ int efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 }
 
 
-int cancelarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int *posicao_atual)
+int cancelarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual, int *bonus_gasto_ultima_compra, int *bonus_ganho_ultima_compra)
 {	
 	system("cls");
 	char cpf_informado[12];
@@ -563,45 +597,52 @@ int cancelarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 		printf("------------------------\n");
 		system("pause");
 		system("cls");
-		return *opcao = 0; //opcao zerada para passar direto pelo menu compra e ir ao menu principal.
+		return 0; //opcao zerada para passar direto pelo menu compra e ir ao menu principal.
 	
 	} else { //caso exista um cpf entao é perguntado
 		int i = verificarCPF(clientes, cpf_informado, &(*posicao_atual));
 		int escolha;
-		do {
+		do { //pergunta qual compra deseja cancelar
 			printf("\nQual compra deseja cancelar?\n");
 			printf("[1 - Ultima compra, 2 - Outra compra]\n");
 			printf("informe: ");
 			scanf("%d", &escolha);
-		} while(escolha != 1 && escolha != 2);
+		} while(escolha != 1 && escolha != 2); //continua perguntando ate que seja digitado 1 ou 2.
 		
-		int escolha_cancelamento;
+		int escolha_cancelamento, escolha_menos_bonus;
 		
 		if(escolha == 1) { //caso escolha a ultima compra
-			if(clientes[i].ultima_compra.compra_cancelada == 1) {
-				printf("\nERRO: Ultima compra ja cancelada!\n");
+			if(clientes[i].ultima_compra.compra_cancelada == -1 || clientes[i].ultima_compra.compra_cancelada == 1) {
+				if(clientes[i].ultima_compra.compra_cancelada == 1) {
+					printf("\n>> ERRO: Ultima compra ja cancelada! <<\n\n");
+				} else if (clientes[i].ultima_compra.compra_cancelada == -1) {
+					printf("\n>> ERRO: Ultima compra noo feita! <<\n\n");
+				}
 				system("pause");
 				system("cls");
-				return *opcao = 0; //se a compra ja tiver sido cancelada retorna ao menu principal
-			} else {
-				printf("\n-----------------------\n");
+				return 0; //se a compra ja tiver sido cancelada retorna ao menu principal
+			} else { //caso contrario apresenta as informações da ultima compra
+				printf("\n-----------------------------\n");
 				printf("Valor da compra: R$ %.2f\n", clientes[i].ultima_compra.valor_total_compra);
-				printf("Bonus: ??");
-				printf("\n-----------------------\n");
+				printf("Valor pago: R$ %.2f\n", clientes[i].ultima_compra.valor_compra_sem_bonus);
+				printf("Bonus usados: %d\n", *bonus_gasto_ultima_compra);
+				printf("Bonus ganhos: %d\n", *bonus_ganho_ultima_compra);
+				printf("-----------------------------\n");
 				printf("\nTem certeza que deseja cancelar essa compra?\n");
-				printf("[1 - Sim | 0 - Nao]\n");
+				printf("[1 - Sim | <outro valor> - Nao]\n");
 				printf("Informe: ");
 				scanf("%d", &escolha_cancelamento);
 				if(escolha_cancelamento != 1) {
-					printf("\nCOMPRA NAO CANCELADA!\n");
+					printf("\n>> COMPRA NAO CANCELADA! <<\n\n");
 					system("pause");
 					system("cls");
-					return *opcao = 0;
+					return 0;
 				} else { //caso seja cancelada atualiza o bonus e valor total
-					clientes[i].total_compras -= clientes[i].ultima_compra.valor_total_compra; //atualizando o valor total de compras
-					//clientes[i].bonus += *bonus_cancela_ultimaCompra; //atualizando bonus  do cliente
+					clientes[i].total_compras -= clientes[i].ultima_compra.valor_compra_sem_bonus; //atualizando o valor total de compras
+					clientes[i].bonus -= *bonus_ganho_ultima_compra; //retiro o bonus que o cliente ganhou
+					clientes[i].bonus += *bonus_gasto_ultima_compra; //adiciono o bonus gasto
 					clientes[i].ultima_compra.compra_cancelada = 1;
-					printf("\nCOMPRA CANCELADA!\n");
+					printf("\n>> COMPRA CANCELADA! <<\n\n");
 					system("pause");
 					system("cls");
 					return 0;
@@ -609,26 +650,51 @@ int cancelarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *opcao, int 
 			}
 		} else if(escolha == 2) { //caso escolha uma outra compra
 			float valor_compra_cancelar;
-			printf("\nQual o valor da compra a ser cancelada?\n");
+			printf("\nQual o valor pago da compra a ser cancelada?\n");
 			printf("Informe: R$ ");
 			scanf("%f", &valor_compra_cancelar);
+			
 			printf("\n-----------------------\n");
 			printf("Valor da compra: R$ %.2f\n", valor_compra_cancelar);
-			printf("Bonus: %d", (int)(valor_compra_cancelar/bonificacao->valor_bonificar));
+			int bonus_calculado = (int)(valor_compra_cancelar/bonificacao->valor_bonificar); //bonus criado apartir do valor pago de outra compra.
+			printf("Bonus: %d", bonus_calculado);
 			printf("\n-----------------------\n");
-			printf("\nTem certeza que deseja cancelar essa compra?\n");
-			printf("[1 - Sim | 0 - Nao]\n");
+			
+			printf("\nVendedor, deseja informar um valor menor de bonus?\n");
+			printf("[1 - Sim | <outro valor> - Nao]\n");
+			printf("Informe: ");
+			scanf("%d", &escolha_menos_bonus);
+			
+			if(escolha_menos_bonus == 1) {
+				int bonus_informado_vendedor;
+				printf("\nDigite o valor do bonus a ser retirado do cliente (menor ou igual a %d): ", bonus_calculado);
+				do {
+					scanf("%d", &bonus_informado_vendedor);
+					if(bonus_informado_vendedor > bonus_calculado) {
+						printf("\nBonus informado maior, digite novamente: ");
+					}
+				}while(bonus_informado_vendedor > bonus_calculado);
+				
+				bonus_calculado = bonus_informado_vendedor;
+			}
+			
+			printf("\n\nTem certeza que deseja cancelar essa compra?\n");
+			printf("[1 - Sim | <outro valor> - Nao]\n");
 			printf("Informe: ");
 			scanf("%d", &escolha_cancelamento);
 			if(escolha_cancelamento != 1) {
-				printf("\nCOMPRA NAO CANCELADA!\n\n");
+				printf("\n>> COMPRA NAO CANCELADA! <<\n\n");
 				system("pause");
 				system("cls");
-				return *opcao = 0;
+				return 0;
 			} else { //caso seja cancelada atualiza o bonus e valor total
-				clientes[i].total_compras -= valor_compra_cancelar; //atualizando o valor total de compras
-				clientes[i].bonus -= ((int)(valor_compra_cancelar/bonificacao->valor_bonificar)); //atualizando bonus  do cliente
-				printf("\nCOMPRA CANCELADA!\n\n");
+				clientes[i].total_compras += valor_compra_cancelar; //atualizando o valor total de compras
+				if(bonus_calculado > clientes[i].bonus) {
+					clientes[i].bonus = 0; //atualizando bonus do cliente, zerando pelo bonus decrementado ser maior
+				} else {
+					clientes[i].bonus -= bonus_calculado; //atualizando bonus do cliente, decrementando
+				}
+				printf("\n>> COMPRA CANCELADA! <<\n\n");
 				system("pause");
 				system("cls");
 				return 0;
@@ -645,9 +711,9 @@ chamando as outras subfunções(EFETIVAR, CANCELAR), atraves de um switch case,
 caso a opcao escolhida seja invalida(não seja 1, 2 ou 0), ira retornar um aviso,
 e ira pedir para o usuario informar novamente outro valor, o menu 
 só é finalizado caso o usuario digite 0, retornando para 
-o menu principal junto de um avsio de saida.
+o menu anterior.
 */
-void menuCompras(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual)
+void menuCompras(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual, int *bonus_gasto_ultima_compra, int *bonus_ganho_ultima_compra)
 {
 	system("cls");
 	int opcao;
@@ -660,13 +726,17 @@ void menuCompras(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual
 		printf("------------------------\n");
 		
 		switch(opcao) {
-			case 1: efetivarCompra(clientes, &(*bonificacao), &opcao, &(*posicao_atual));
+			case 1: efetivarCompra(clientes, &(*bonificacao), &(*posicao_atual), &(*bonus_gasto_ultima_compra), &(*bonus_ganho_ultima_compra));
 				break;
-			case 2: cancelarCompra(clientes, &(*bonificacao), &opcao, &(*posicao_atual));
+			case 2: cancelarCompra(clientes, &(*bonificacao), &(*posicao_atual), &(*bonus_gasto_ultima_compra), &(*bonus_ganho_ultima_compra));
 				break;
 			case 0: system("cls");
 				break;
-			default: printf("\nEscolha uma opcao valida!\n\n------------------------\n");
+			default: 
+				system("cls"); 
+				printf("\n------------------------\n\nEscolha uma opcao valida!\n\n------------------------\n");
+				system("pause");
+				system("cls");
 		}
 	} while(opcao != 0);
 }
@@ -806,7 +876,7 @@ void listarClientes(tCliente clientes[MAX], int *posicao_atual)
 	system("cls");
 	int i;
 	if(*posicao_atual == -1) {
-		printf("\nNenhum cliente cadastrado ainda!!!!\n\n");
+		printf("\n>> Nenhum cliente cadastrado ainda!! <<\n\n");
 	}
 	for(i = 0; i <= *posicao_atual; i++) {
 		printf("\n---- CLIENTE (%d) ----\n", i+1);
@@ -828,7 +898,7 @@ void listarBonus(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual
 	system("cls");
 	int i;
 	if(*posicao_atual == -1) {
-		printf("\nNenhum cliente cadastrado ainda!!!!\n\n");
+		printf("\n>> Nenhum cliente cadastrado ainda!! <<\n\n");
 	}
 	for(i = 0; i <= *posicao_atual; i++) {
 		printf("\n------------- CLIENTE (%d) -------------\n", i+1);
@@ -841,8 +911,62 @@ void listarBonus(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual
 	return;
 }
 
-void listarClientePorCompra()
+void listarClientePorCompra(tCliente clientes[MAX], int *posicao_atual)
 {
+	system("cls");
+	int i;
+	if(*posicao_atual == -1) {
+		printf("\n>> Nenhum cliente cadastrado ainda!! <<\n\n");
+		system("pause");
+		system("cls");
+		return;
+	}
+	float valor_compra_pesquisa;
+	int escolha_compra_valor;
+	printf("Informe o valor desejado, de uma compra: ");
+	scanf("%f", &valor_compra_pesquisa);
+	printf("\nAgora escolha o que deseja com relacao a esse valor:\n");
+	printf("[1 - maior, 0 - igual, -1 - menor]\n");
+	printf("Informe: ");
+	do {
+		scanf("%d", &escolha_compra_valor);
+		if(escolha_compra_valor != 1 && escolha_compra_valor != 0 && escolha_compra_valor != -1) {
+			printf("\nValor invalido, informe novamente: ");
+		}
+	}while(escolha_compra_valor != 1 && escolha_compra_valor != 0 && escolha_compra_valor != -1);
+
+	for(i = 0; i <= *posicao_atual; i++) {
+		if(escolha_compra_valor == 1 && clientes[i].total_compras > valor_compra_pesquisa) {
+			printf("\n---- CLIENTE (%d) ----\n", i+1);
+			printf("NOME: %s\n", clientes[i].nome);
+			printf("CPF: %s\n", clientes[i].cpf);
+			printf("TELEFONE: %s\n", clientes[i].telefone);
+			printf("EMAIL: %s\n", clientes[i].email);
+			printf("BONUS: %d\n", clientes[i].bonus);
+			printf("TOTAL EM COMPRAS: R$ %.2f\n\n", clientes[i].total_compras);
+			
+		} else if (escolha_compra_valor == 0 && clientes[i].total_compras == valor_compra_pesquisa) {
+			printf("\n---- CLIENTE (%d) ----\n", i+1);
+			printf("NOME: %s\n", clientes[i].nome);
+			printf("CPF: %s\n", clientes[i].cpf);
+			printf("TELEFONE: %s\n", clientes[i].telefone);
+			printf("EMAIL: %s\n", clientes[i].email);
+			printf("BONUS: %d\n", clientes[i].bonus);
+			printf("TOTAL EM COMPRAS: R$ %.2f\n\n", clientes[i].total_compras);
+			
+		} else if (escolha_compra_valor == -1 && clientes[i].total_compras < valor_compra_pesquisa)	{
+			printf("\n---- CLIENTE (%d) ----\n", i+1);
+			printf("NOME: %s\n", clientes[i].nome);
+			printf("CPF: %s\n", clientes[i].cpf);
+			printf("TELEFONE: %s\n", clientes[i].telefone);
+			printf("EMAIL: %s\n", clientes[i].email);
+			printf("BONUS: %d\n", clientes[i].bonus);
+			printf("TOTAL EM COMPRAS: R$ %.2f\n\n", clientes[i].total_compras);
+		}
+	}
+	printf("\n");
+	system("pause");
+	system("cls");
 	return;
 }
 
@@ -872,7 +996,7 @@ void menuRelatorios(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_at
 				break;
 			case 2: listarBonus(clientes, &(*bonificacao), &(*posicao_atual));
 				break;
-			case 3: listarClientePorCompra();
+			case 3: listarClientePorCompra(clientes, &(*posicao_atual));
 				break;
 			case 0: system("cls");
 				break;
@@ -889,7 +1013,7 @@ atraves de um switch case, caso a opcao escolhida seja invalida(não seja 1, 2, 3
 ira retornar um aviso, e ira pedir para o usuario informar 
 novamente outro valor, o programa so é finalizado com a opcao 0.
 */
-void menuPrincipal(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual) 
+void menuPrincipal(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atual, int *bonus_gasto_ultima_compra, int *bonus_ganho_ultima_compra) 
 {
 	system("cls");
 	int opcao;
@@ -909,7 +1033,7 @@ void menuPrincipal(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atu
 		switch(opcao) {
 			case 1: menuClientes(clientes, &(*posicao_atual));
 				break;
-			case 2: menuCompras(clientes, &(*bonificacao), &(*posicao_atual));
+			case 2: menuCompras(clientes, &(*bonificacao), &(*posicao_atual), &(*bonus_gasto_ultima_compra), &(*bonus_ganho_ultima_compra));
 				break;
 			case 3: menuBonus(clientes, &(*bonificacao), &(*posicao_atual));
 				break;
@@ -926,7 +1050,8 @@ void menuPrincipal(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_atu
 int main(int argc, char *argv[]) {
 	tCliente clientes[MAX];
 	tBonus bonificacao;
-	int posicao_atual = -1; //inicio posição com -1, so ira para zero caso o cliente seja cadastrado
-	menuPrincipal(clientes, &bonificacao, &posicao_atual);
+	int posicao_atual = -1; //inicio posição com -1, so ira para zero caso o primeiro cliente seja cadastrado
+	int bonus_gasto_ultima_compra = 0, bonus_ganho_ultima_compra = 0;
+	menuPrincipal(clientes, &bonificacao, &posicao_atual, &bonus_gasto_ultima_compra, &bonus_ganho_ultima_compra);
 	return 0;
 }
