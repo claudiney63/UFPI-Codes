@@ -60,7 +60,7 @@ recebe opcao do menu clientes, para ter um controle para retornar para o menu pr
 apos a finalização dessa função, alem da posicao atual do vetor, para manter um controle
 sobre o preenchimento do vetor.
 */
-int cadastrarCliente(tCliente clientes[MAX], int *posicao_atual) 
+void cadastrarCliente(tCliente clientes[MAX], int *posicao_atual) 
 {
 	system("cls");
 	char cpf_informado[12], nome_informado[50];
@@ -78,7 +78,7 @@ int cadastrarCliente(tCliente clientes[MAX], int *posicao_atual)
 		printf("------------------------\n");
 		system("pause");
 		system("cls");
-		return 0; //retorna opcao para o menu clientes.
+		return; //retorna opcao para o menu clientes.
 	}
 	//o vetor só é incrementdo caso não exista cpf ja existente ou seja o primeiro.
 	pos = *posicao_atual+1;
@@ -102,7 +102,7 @@ int cadastrarCliente(tCliente clientes[MAX], int *posicao_atual)
 	system("pause");
 	system("cls");
 	 
-	return *posicao_atual+=1; //retorna a posicao final do vetor incrementada +1, ja que foi cadastrado um cliente.
+	*posicao_atual+=1; //retorna a posicao final do vetor incrementada +1, ja que foi cadastrado um cliente.
 }
 
 /*
@@ -156,7 +156,7 @@ void alterarNome(tCliente clientes[MAX], int *posicao_cliente_existente)
 	system("cls");
 	char novo_nome[50];
 	printf("Qual o novo nome? Informe: ");
-	scanf("%s", novo_nome);
+	receber_nome_composto(novo_nome);
 	printf("----------------------------\n");
 	strcpy(clientes[*posicao_cliente_existente].nome, novo_nome);
 	system("cls");
@@ -290,7 +290,7 @@ void consultarCliente(tCliente clientes[MAX], int *posicao_atual)
 			printf("EMAIL: %s\n", clientes[i].email);
 			printf("BONUS: %d\n", clientes[i].bonus);
 			printf("TOTAL EM COMPRAS: R$ %.2f\n", clientes[i].total_compras);
-			printf("\n---------ULTIMA COMPRA: --------- \n");
+			printf("\n--------- ULTIMA COMPRA --------- \n");
 			printf("Valor da compra sem bonus: R$ %.2f\n", clientes[i].ultima_compra.valor_compra_sem_bonus);
 			printf("Valor total da compra: R$ %.2f\n", clientes[i].ultima_compra.valor_total_compra);
 			int aux_compra_cancelada = clientes[i].ultima_compra.compra_cancelada;
@@ -321,7 +321,7 @@ void consultarCliente(tCliente clientes[MAX], int *posicao_atual)
 função responsavel por deletar um cliente, pergunta seu cpf e então apresenta um cliente caso e exista
 e pergunta se é aquele que deve ser deletado, apresentando suas informações
 */
-int removerCliente(tCliente clientes[MAX], int *posicao_atual)
+void removerCliente(tCliente clientes[MAX], int *posicao_atual)
 {
 	system("cls");
 	char cpf_informado[12];
@@ -334,7 +334,7 @@ int removerCliente(tCliente clientes[MAX], int *posicao_atual)
 		printf("\nErro: CPF nao cadastrado.\n\n");
 		printf("------------------------\n");
 		system("pause");
-		return 0; 
+		return; 
 	}
 	//recebe o indice do cliente encontrado
 	int i = verificarCPF(clientes, cpf_informado, &(*posicao_atual)), escolha, cont;
@@ -347,7 +347,7 @@ int removerCliente(tCliente clientes[MAX], int *posicao_atual)
 	printf("BONUS: %d\n", clientes[i].bonus);
 	printf("TOTAL EM COMPRAS: %.2f\n", clientes[i].total_compras);
 	printf("--------------------------------------------\n");
-	printf("Tem zerteza que deseja remover esse cliente?\n");
+	printf("Tem certeza que deseja remover esse cliente?\n");
 	printf("[1 - SIM / 0 - NAO]\n");
 	printf("--------------------------------------------\n");
 	printf("Escolha: ");
@@ -360,7 +360,7 @@ int removerCliente(tCliente clientes[MAX], int *posicao_atual)
 			printf("\n--------------------------------------------\n");
 			system("pause");
 			system("cls");
-			return *posicao_atual-=1;
+			*posicao_atual-=1;
 		} else {
 			//apartir do indice do vetor do cliente que quero remover ate o penultimo.
 			//Passando os posteriores para a posicao anterior.
@@ -378,7 +378,7 @@ int removerCliente(tCliente clientes[MAX], int *posicao_atual)
 			printf("\n--------------------------------------------\n");
 			system("pause");
 			system("cls");
-			return *posicao_atual-=1; //diminui 1 do tamanho do vetor, o ultimo que esta agora vazio
+			*posicao_atual-=1; //diminui 1 do tamanho do vetor, o ultimo que esta agora vazio
 		}
 	} else { //se o usuario não aceitar remover volta para o menu anterior
 		system("cls");
@@ -387,7 +387,7 @@ int removerCliente(tCliente clientes[MAX], int *posicao_atual)
 		printf("\n--------------------------------------------\n");
 		system("pause");
 		system("cls");
-		return 0;
+		return;
 	}
 }
 
@@ -556,13 +556,27 @@ void efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_at
 	//o cliente so recebe o bonus, caso não tenha chegado no teto e tenha pago um valor minimo para ser bonificado
 	if(pagamento_cliente >= bonificacao->valor_bonificar && clientes[i].bonus < bonificacao->teto) {
 		if(pagamento_cliente - valor_compra == 0.0) { //ve se o pagamento nao tera troco e calcula o bonus direto
-			clientes[i].bonus += (int)(pagamento_cliente / bonificacao->valor_bonificar);
 			bonus_ganho_ultima_compra[i] = (int)(pagamento_cliente / bonificacao->valor_bonificar);
+			
+			if(bonus_ganho_ultima_compra[i] > bonificacao->teto-clientes[i].bonus) { 
+			//diminui o bonus ganho caso esse seja maior que o teto menos o bonus ja possuido
+				bonus_ganho_ultima_compra[i] -= ((bonus_ganho_ultima_compra[i]+clientes[i].bonus)-bonificacao->teto);
+			}
+			
+			clientes[i].bonus += bonus_ganho_ultima_compra[i]; //calcula agora o bonus atual com o bonus ganho
+			
 		} else { //tira a diferença do pagamento caso seja maior que o valor da compra, havendo troco, e so calcula o bonus com o valor pago restante
 			float diferenca_preco = pagamento_cliente - valor_compra;
-			clientes[i].bonus += (int)((pagamento_cliente - diferenca_preco) / bonificacao->valor_bonificar);
 			bonus_ganho_ultima_compra[i] = (int)((pagamento_cliente - diferenca_preco) / bonificacao->valor_bonificar);
+			
+			if(bonus_ganho_ultima_compra[i] > bonificacao->teto-clientes[i].bonus) { 
+			//diminui o bonus ganho caso esse seja maior que o teto menos o bonus ja possuido
+				bonus_ganho_ultima_compra[i] -= ((bonus_ganho_ultima_compra[i]+clientes[i].bonus)-bonificacao->teto);
+			}
+			
+			clientes[i].bonus += bonus_ganho_ultima_compra[i]; //calcula agora o bonus atual com o bonus ganho	
 		}
+		
 		//o bonus é diminuido caso tenha passado do teto, voltando para o teto
 		if(clientes[i].bonus > bonificacao->teto) {
 			clientes[i].bonus -= (clientes[i].bonus-bonificacao->teto);
@@ -570,9 +584,9 @@ void efetivarCompra(tCliente clientes[MAX], tBonus *bonificacao, int *posicao_at
 	}
 	
 	//verifico se o bonus ganho tambem passou do teto, fazendo o voltar para o teto
-	if(bonus_ganho_ultima_compra[i] > bonificacao->teto) {
-		bonus_ganho_ultima_compra[i] -= (bonus_ganho_ultima_compra[i] - bonificacao->teto);
-	}
+	//if(bonus_ganho_ultima_compra[i] > bonificacao->teto) {
+	//	bonus_ganho_ultima_compra[i] -= (bonus_ganho_ultima_compra[i] - bonificacao->teto);
+	//}
 	
 	if(pagamento_cliente > valor_compra) {
 		printf("\n---------------------------------\n");
