@@ -3,20 +3,30 @@
 
 cont = 10
 media = 0
-menor = 0
 maior = 0
+menor = 0
 
 while cont > 0 :
     num = float(input("Informe um número: "))
     media += num
     
-    if menor > num :
+    if cont == 10 :
         menor = num
-    if maior < num :
+    if cont == 9 :
         maior = num
-    
+        if menor > maior :
+            aux = menor
+            menor = maior
+            maior = aux
+    else :
+        auxNum = num
+        if menor > auxNum :
+            menor = auxNum
+        if maior < auxNum :
+            maior = auxNum
+
     cont -= 1
 
 print("Menor: ", menor)
 print("Maior: ", maior)
-print("Média: ", media)
+print("Média: ", media/10)
